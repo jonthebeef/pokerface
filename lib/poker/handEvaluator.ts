@@ -49,10 +49,24 @@ export function evaluateHand(
   const handInfo = HAND_RANKS[solved.name] || { rank: 1, display: solved.name };
 
   // Calculate strength score (0-100)
-  // Based on hand rank and relative strength within that rank
-  const baseStrength = (handInfo.rank - 1) * 10;
-  const rankStrength = Math.min(10, solved.rank || 0);
-  const strength = Math.min(100, baseStrength + rankStrength);
+  // Map hand ranks to reasonable strength ranges
+  const strengthRanges: Record<number, [number, number]> = {
+    1: [5, 20],    // High Card: 5-20
+    2: [25, 40],   // Pair: 25-40
+    3: [45, 60],   // Two Pair: 45-60
+    4: [60, 72],   // Three of a Kind: 60-72
+    5: [72, 80],   // Straight: 72-80
+    6: [80, 85],   // Flush: 80-85
+    7: [85, 92],   // Full House: 85-92
+    8: [92, 96],   // Four of a Kind: 92-96
+    9: [96, 99],   // Straight Flush: 96-99
+    10: [100, 100], // Royal Flush: 100
+  };
+
+  const [minStr, maxStr] = strengthRanges[handInfo.rank] || [0, 10];
+  // Use pokersolver's internal rank to interpolate within the range
+  const internalRank = Math.min(10, solved.rank || 5);
+  const strength = Math.round(minStr + (maxStr - minStr) * (internalRank / 10));
 
   return {
     handName: handInfo.display,

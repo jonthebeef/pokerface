@@ -24,53 +24,43 @@ export function getRulesBasedRecommendation(input: AnalysisInput): Recommendatio
     };
   }
 
-  // Post-flop: use hand strength
-  const strength = handEvaluation.strength;
+  // Post-flop: use hand rank as primary factor
   const handRank = handEvaluation.handRank;
 
-  // Monster hands (two pair or better with high strength)
-  if (handRank >= 3 && strength >= 60) {
+  // Strong hands: Two Pair or better (rank >= 3) → RAISE
+  if (handRank >= 3) {
     return {
       action: "RAISE",
       confidence: "HIGH",
-      reasoning: `You have ${handEvaluation.description}. This is a strong hand - raise to build the pot and protect against draws.`,
+      reasoning: `You have ${handEvaluation.description}! This is a strong hand - raise to build the pot.`,
     };
   }
 
-  // Strong made hands
-  if (handRank >= 2 && strength >= 40) {
+  // Made hand: Pair (rank == 2) → CALL
+  if (handRank === 2) {
     return {
       action: "CALL",
       confidence: "MEDIUM",
-      reasoning: `You have ${handEvaluation.description}. This is a decent hand - call to see more cards, but be cautious of heavy action.`,
+      reasoning: `You have ${handEvaluation.description}. A decent hand - call to see more cards, but be cautious of heavy betting.`,
     };
   }
 
-  // Draws and marginal hands
-  if (strength >= 25) {
-    // Check if we might have a draw
-    const possibleDraw = hasFlushDraw(holeCards, communityCards) || hasStraightDraw(holeCards, communityCards);
+  // High card only - check for draws
+  const possibleDraw = hasFlushDraw(holeCards, communityCards) || hasStraightDraw(holeCards, communityCards);
 
-    if (possibleDraw) {
-      return {
-        action: "CALL",
-        confidence: "LOW",
-        reasoning: `You have ${handEvaluation.description} with a possible draw. Call if the price is right, but don't invest too much.`,
-      };
-    }
-
+  if (possibleDraw) {
     return {
-      action: "CHECK",
+      action: "CALL",
       confidence: "LOW",
-      reasoning: `You have ${handEvaluation.description}. Check to see free cards if possible, fold to significant bets.`,
+      reasoning: `You have ${handEvaluation.description} but a possible draw. Call small bets to see if you hit.`,
     };
   }
 
-  // Weak hands
+  // High card with no draws → FOLD
   return {
     action: "FOLD",
     confidence: "HIGH",
-    reasoning: `You have ${handEvaluation.description}. This is a weak hand - fold and wait for a better opportunity.`,
+    reasoning: `You have ${handEvaluation.description}. With no pair and no draw, fold and wait for a better hand.`,
   };
 }
 
