@@ -102,24 +102,66 @@ export default function Home() {
         </div>
 
         {/* Input Methods */}
-        <div className="flex gap-2">
-          <button
-            onClick={() => setShowCamera(true)}
-            className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-500 flex items-center justify-center gap-2"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            Scan Cards
-          </button>
-          <button
-            onClick={() => setSelectorMode(gameState.holeCards ? "community" : "hole")}
-            className="flex-1 bg-gray-700 text-white py-3 rounded-lg font-bold hover:bg-gray-600"
-          >
-            Select Manually
-          </button>
-        </div>
+        {!gameState.holeCards ? (
+          /* Step 1: Add hole cards */
+          <div className="space-y-2">
+            <div className="text-center text-gray-300 text-sm">
+              Step 1: Add your 2 private cards
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowCamera(true)}
+                className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Scan
+              </button>
+              <button
+                onClick={() => setSelectorMode("hole")}
+                className="flex-1 bg-gray-700 text-white py-3 rounded-lg font-bold"
+              >
+                Select Manually
+              </button>
+            </div>
+          </div>
+        ) : gameState.communityCards.length < 5 ? (
+          /* Step 2: Add community cards */
+          <div className="space-y-2">
+            <div className="text-center text-gray-300 text-sm">
+              {gameState.communityCards.length === 0
+                ? "When dealer shows the Flop (3 cards), add them:"
+                : gameState.communityCards.length === 3
+                  ? "When dealer shows the Turn (4th card):"
+                  : "When dealer shows the River (5th card):"}
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowCamera(true)}
+                className="flex-1 bg-green-600 text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Scan Table
+              </button>
+              <button
+                onClick={() => setSelectorMode("community")}
+                className="flex-1 bg-gray-700 text-white py-3 rounded-lg font-bold"
+              >
+                Add Manually
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* All cards added */
+          <div className="text-center text-green-400 text-sm py-2">
+            All cards added - see your recommendation above!
+          </div>
+        )}
 
         {/* Results Section */}
         {gameState.holeCards && (
@@ -129,13 +171,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* Empty state */}
-        {!gameState.holeCards && (
-          <div className="text-center text-gray-400 py-8">
-            <div className="text-4xl mb-2">🃏</div>
-            <div>Scan or select your cards to get started</div>
-          </div>
-        )}
       </div>
 
       {/* Card Selector Modal */}

@@ -56,19 +56,19 @@ export function CameraCapture({ onCardsDetected, onClose }: CameraCaptureProps) 
 
   return (
     <div className="fixed inset-0 bg-black z-50 flex flex-col">
-      {/* Header */}
-      <div className="flex justify-between items-center p-4 bg-black/80">
+      {/* Header - fixed height */}
+      <div className="flex-shrink-0 flex justify-between items-center p-3 bg-black safe-area-top">
         <h2 className="text-white font-bold">Scan Cards</h2>
         <button
           onClick={handleClose}
-          className="text-white hover:text-gray-300"
+          className="text-white hover:text-gray-300 px-3 py-1"
         >
           Close
         </button>
       </div>
 
-      {/* Camera view */}
-      <div className="flex-1 relative">
+      {/* Camera view - takes remaining space */}
+      <div className="flex-1 relative min-h-0 overflow-hidden">
         {!isStreaming && !error && (
           <div className="absolute inset-0 flex items-center justify-center">
             <button
@@ -105,10 +105,10 @@ export function CameraCapture({ onCardsDetected, onClose }: CameraCaptureProps) 
         {/* Scanning overlay */}
         {isStreaming && (
           <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute inset-0 border-4 border-white/30 m-8 rounded-lg" />
-            <div className="absolute bottom-20 left-0 right-0 text-center">
+            <div className="absolute inset-4 border-4 border-white/30 rounded-lg" />
+            <div className="absolute bottom-4 left-0 right-0 text-center">
               <div className="text-white text-sm bg-black/50 inline-block px-4 py-2 rounded">
-                Position cards in frame and tap Capture
+                Position cards in frame
               </div>
             </div>
           </div>
@@ -116,7 +116,7 @@ export function CameraCapture({ onCardsDetected, onClose }: CameraCaptureProps) 
 
         {/* Detection result overlay */}
         {detectionResult && (
-          <div className="absolute bottom-20 left-4 right-4">
+          <div className="absolute bottom-4 left-4 right-4">
             <div className={`rounded-lg p-3 ${
               detectionResult.cards.length > 0
                 ? "bg-green-900/80 border border-green-600"
@@ -136,9 +136,16 @@ export function CameraCapture({ onCardsDetected, onClose }: CameraCaptureProps) 
         )}
       </div>
 
-      {/* Capture button */}
-      {isStreaming && (
-        <div className="p-4 bg-black/80">
+      {/* Capture button - always visible at bottom */}
+      <div className="flex-shrink-0 p-4 pb-8 bg-black safe-area-bottom">
+        {!isStreaming && !error ? (
+          <button
+            onClick={startCamera}
+            className="w-full py-4 rounded-xl font-bold text-lg bg-blue-600 text-white"
+          >
+            Start Camera
+          </button>
+        ) : isStreaming ? (
           <button
             onClick={handleCapture}
             disabled={isDetecting}
@@ -146,14 +153,21 @@ export function CameraCapture({ onCardsDetected, onClose }: CameraCaptureProps) 
               w-full py-4 rounded-xl font-bold text-lg
               ${isDetecting
                 ? "bg-gray-600 text-gray-400"
-                : "bg-white text-black hover:bg-gray-200"
+                : "bg-white text-black active:bg-gray-200"
               }
             `}
           >
             {isDetecting ? "Detecting..." : "Capture"}
           </button>
-        </div>
-      )}
+        ) : (
+          <button
+            onClick={handleClose}
+            className="w-full py-4 rounded-xl font-bold text-lg bg-gray-700 text-white"
+          >
+            Use Manual Selection
+          </button>
+        )}
+      </div>
     </div>
   );
 }
