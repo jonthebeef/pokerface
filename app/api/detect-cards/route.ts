@@ -37,19 +37,21 @@ function parseCardFromJSON(cardData: CardJSON): Card | null {
 
 export async function POST(request: NextRequest) {
   try {
-    const { image } = await request.json();
+    const body = await request.json();
+    const { image } = body;
 
     if (!image) {
       return NextResponse.json(
-        { error: "No image provided" },
+        { cards: [], confidence: 0, error: "No image provided" },
         { status: 400 }
       );
     }
 
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
+      console.error("OPENAI_API_KEY not found in environment");
       return NextResponse.json(
-        { error: "OpenAI API key not configured" },
+        { cards: [], confidence: 0, error: "OpenAI API key not configured" },
         { status: 500 }
       );
     }
@@ -62,6 +64,8 @@ export async function POST(request: NextRequest) {
       imageUrl = `data:image/jpeg;base64,${image}`;
     }
 
+    console.log("Sending image to OpenAI, size:", imageUrl.length);
+
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       max_tokens: 300,
@@ -73,7 +77,7 @@ export async function POST(request: NextRequest) {
               type: "image_url",
               image_url: {
                 url: imageUrl,
-                detail: "low", // Use low detail mode for cost efficiency (85 tokens)
+                detail: "auto", // Let OpenAI decide detail level
               },
             },
             {
@@ -94,6 +98,8 @@ IMPORTANT: Return ONLY the JSON array, no other text.`,
         },
       ],
     });
+
+    console.log("OpenAI response received");
 
     const responseText = response.choices[0]?.message?.content || "[]";
 
@@ -128,8 +134,9 @@ IMPORTANT: Return ONLY the JSON array, no other text.`,
     return NextResponse.json(result);
   } catch (error) {
     console.error("Card detection error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Failed to detect cards";
     return NextResponse.json(
-      { cards: [], confidence: 0, error: "Failed to detect cards" },
+      { cards: [], confidence: 0, error: errorMessage },
       { status: 500 }
     );
   }
