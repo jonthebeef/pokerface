@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <!-- Background -->
+  <rect width="192" height="192" rx="32" fill="#1a5f3c"/>
+
+  <!-- Card 1 (back) -->
+  <rect x="45" y="35" width="60" height="85" rx="6" fill="#fff" transform="rotate(-10 75 77.5)"/>
+
+  <!-- Card 2 (front) -->
+  <rect x="75" y="45" width="60" height="85" rx="6" fill="#fff" transform="rotate(10 105 87.5)"/>
+
+  <!-- Spade symbol on front card -->
+  <g transform="translate(95, 70) rotate(10)">
+    <path d="M15 0 C15 -12 0 -20 0 -8 C0 0 15 8 15 20 C15 8 30 0 30 -8 C30 -20 15 -12 15 0" fill="#1a5f3c"/>
+    <rect x="12" y="15" width="6" height="12" fill="#1a5f3c"/>
+  </g>
+
+  <!-- "A" on front card -->
+  <text x="82" y="68" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#1a5f3c" transform="rotate(10 82 68)">A</text>
+
+  <!-- Coach text -->
+  <text x="96" y="165" font-family="Arial, sans-serif" font-size="22" font-weight="bold" fill="#fff" text-anchor="middle">COACH</text>
+</svg>
