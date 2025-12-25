@@ -134,7 +134,19 @@ IMPORTANT: Return ONLY the JSON array, no other text.`,
     return NextResponse.json(result);
   } catch (error) {
     console.error("Card detection error:", error);
-    const errorMessage = error instanceof Error ? error.message : "Failed to detect cards";
+
+    // Sanitize error message - never expose API keys to frontend
+    let errorMessage = "Failed to detect cards";
+    if (error instanceof Error) {
+      if (error.message.includes("401") || error.message.includes("API key")) {
+        errorMessage = "API configuration error. Please check server logs.";
+      } else if (error.message.includes("429")) {
+        errorMessage = "Rate limit exceeded. Please try again in a moment.";
+      } else if (error.message.includes("500")) {
+        errorMessage = "OpenAI service error. Please try again.";
+      }
+    }
+
     return NextResponse.json(
       { cards: [], confidence: 0, error: errorMessage },
       { status: 500 }
