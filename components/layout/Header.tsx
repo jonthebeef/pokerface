@@ -6,11 +6,11 @@ interface HeaderProps {
 
 export function Header({ onReset }: HeaderProps) {
   return (
-    <header className="bg-gray-900 border-b border-gray-800">
-      {/* Spacer for notch/status bar area - same background color */}
-      <div className="h-[env(safe-area-inset-top)]" />
-      {/* Actual header content */}
-      <div className="flex justify-between items-center px-4 py-3">
+    <header
+      className="bg-gray-900 border-b border-gray-800 px-4 py-3"
+      style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}
+    >
+      <div className="flex justify-between items-center">
         <div>
           <h1 className="text-xl font-bold text-white">Poker Coach</h1>
           <p className="text-xs text-gray-400">Texas Hold&apos;em Advisor</p>

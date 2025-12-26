@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
+    statusBarStyle: "black-translucent",
     title: "Poker Coach",
   },
 };
@@ -17,7 +17,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#1a5f3c",
+  viewportFit: "cover",
+  themeColor: "#111827",
 };
 
 export default function RootLayout({
