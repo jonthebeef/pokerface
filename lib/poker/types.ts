@@ -130,3 +130,58 @@ export function toPokersolverFormat(card: Card): string {
   const suitChar = card.suit[0]; // h, d, c, s
   return `${card.rank}${suitChar}`;
 }
+
+// Position types
+export type Position = "early" | "middle" | "late" | "blinds";
+
+export const POSITION_LABELS: Record<Position, string> = {
+  early: "Early",
+  middle: "Middle",
+  late: "Late",
+  blinds: "Blinds",
+};
+
+export const POSITION_DESCRIPTIONS: Record<Position, string> = {
+  early: "First to act - play tight",
+  middle: "Middle position - moderate range",
+  late: "Last to act - wider range",
+  blinds: "Forced bets - defend selectively",
+};
+
+// User action (what they actually did)
+export type UserAction = "FOLD" | "CHECK" | "CALL" | "RAISE";
+
+// Hand outcome
+export type HandOutcome = "won" | "lost" | "folded" | "split";
+
+// Stage record - what happened at each stage
+export interface StageRecord {
+  stage: GameStage;
+  communityCards: Card[];
+  recommendation: Recommendation;
+  userAction: UserAction;
+  followedAdvice: boolean;
+}
+
+// Complete hand history record
+export interface HandRecord {
+  id: string;
+  timestamp: number;
+  position: Position;
+  holeCards: [Card, Card];
+  stages: StageRecord[];
+  outcome: HandOutcome;
+  notes?: string;
+}
+
+// Stats derived from history
+export interface HandHistoryStats {
+  totalHands: number;
+  wins: number;
+  losses: number;
+  folds: number;
+  followedAdviceCount: number;
+  ignoredAdviceCount: number;
+  winRateWhenFollowed: number;
+  winRateWhenIgnored: number;
+}

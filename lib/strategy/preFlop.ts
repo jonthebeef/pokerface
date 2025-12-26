@@ -1,4 +1,4 @@
-import { Card, Rank, Action } from "../poker/types";
+import { Card, Rank, Action, Position } from "../poker/types";
 
 /**
  * Sklansky-Chubukov hand rankings for pre-flop play
@@ -59,51 +59,135 @@ export function getSklanskyTier(holeCards: [Card, Card]): number {
 }
 
 /**
- * Get pre-flop recommendation based on hand strength
+ * Position adjustments for pre-flop play
+ * Early: Play very tight (only premium hands)
+ * Middle: Standard ranges
+ * Late: Play looser (position advantage)
+ * Blinds: Defend selectively
  */
-export function getPreFlopRecommendation(holeCards: [Card, Card]): {
+const POSITION_TIER_ADJUSTMENT: Record<Position, number> = {
+  early: -2,  // Subtract 2 from playable tier threshold (tighter)
+  middle: 0,  // Standard
+  late: 2,    // Add 2 to playable tier threshold (looser)
+  blinds: 1,  // Slightly looser to defend blinds
+};
+
+/**
+ * Get pre-flop recommendation based on hand strength and position
+ */
+export function getPreFlopRecommendation(
+  holeCards: [Card, Card],
+  position: Position = "middle"
+): {
   action: Action;
   reasoning: string;
   tier: number;
+  handDescription: string;
 } {
   const tier = getSklanskyTier(holeCards);
   const notation = getHandNotation(holeCards[0], holeCards[1]);
+  const adjustment = POSITION_TIER_ADJUSTMENT[position];
 
+  // Position labels for messaging
+  const positionLabel = position === "early" ? "early position"
+    : position === "late" ? "late position"
+    : position === "blinds" ? "the blinds"
+    : "middle position";
+
+  // Premium hands (Tier 1-2) - always raise
   if (tier <= 2) {
     return {
       action: "RAISE",
-      reasoning: `${notation} is a premium hand (Tier ${tier}). Raise to build the pot and protect your hand.`,
+      reasoning: `${notation} is a premium hand. Raise from any position to build the pot.`,
       tier,
+      handDescription: `Premium: ${notation}`,
     };
   }
 
+  // Strong hands (Tier 3-4) - raise from most positions
   if (tier <= 4) {
+    if (position === "early" && tier === 4) {
+      return {
+        action: "CALL",
+        reasoning: `${notation} is strong but in ${positionLabel}, just call. You'll act first post-flop.`,
+        tier,
+        handDescription: `Strong: ${notation}`,
+      };
+    }
     return {
       action: "RAISE",
-      reasoning: `${notation} is a strong hand (Tier ${tier}). Raise in most positions.`,
+      reasoning: `${notation} is a strong hand. Raise from ${positionLabel}.`,
       tier,
+      handDescription: `Strong: ${notation}`,
     };
   }
 
+  // Playable hands (Tier 5-6) - position dependent
   if (tier <= 6) {
+    if (position === "early") {
+      return {
+        action: "FOLD",
+        reasoning: `${notation} is too risky in ${positionLabel}. You'll be out of position post-flop.`,
+        tier,
+        handDescription: `Marginal: ${notation}`,
+      };
+    }
+    if (position === "late") {
+      return {
+        action: "RAISE",
+        reasoning: `${notation} is playable in ${positionLabel}. Raise and use your position advantage.`,
+        tier,
+        handDescription: `Playable: ${notation}`,
+      };
+    }
     return {
       action: "CALL",
-      reasoning: `${notation} is a playable hand (Tier ${tier}). Call to see the flop, but be cautious.`,
+      reasoning: `${notation} is playable from ${positionLabel}. Call to see the flop.`,
       tier,
+      handDescription: `Playable: ${notation}`,
     };
   }
 
+  // Marginal hands (Tier 7-8) - only from late position or blinds
   if (tier <= 8) {
+    if (position === "late") {
+      return {
+        action: "CALL",
+        reasoning: `${notation} is marginal but playable in ${positionLabel}. Call if it's cheap.`,
+        tier,
+        handDescription: `Marginal: ${notation}`,
+      };
+    }
+    if (position === "blinds") {
+      return {
+        action: "CHECK",
+        reasoning: `${notation} is weak but you're in ${positionLabel}. Check if you can, fold to raises.`,
+        tier,
+        handDescription: `Marginal: ${notation}`,
+      };
+    }
+    return {
+      action: "FOLD",
+      reasoning: `${notation} is too weak for ${positionLabel}. Wait for a better hand.`,
+      tier,
+      handDescription: `Marginal: ${notation}`,
+    };
+  }
+
+  // Trash hands (Tier 9-10) - fold unless free play
+  if (position === "blinds") {
     return {
       action: "CHECK",
-      reasoning: `${notation} is a marginal hand (Tier ${tier}). Only play from late position or if it's cheap to see the flop.`,
+      reasoning: `${notation} is weak but check from ${positionLabel} if no raise. Fold to any bet.`,
       tier,
+      handDescription: `Weak: ${notation}`,
     };
   }
 
   return {
     action: "FOLD",
-    reasoning: `${notation} is a weak hand. Fold and wait for a better opportunity.`,
+    reasoning: `${notation} is a weak hand. Fold and wait for a better spot.`,
     tier,
+    handDescription: `Weak: ${notation}`,
   };
 }

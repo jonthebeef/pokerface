@@ -1,4 +1,4 @@
-import { Card, GameStage, HandEvaluation, Recommendation } from "../poker/types";
+import { Card, GameStage, HandEvaluation, Recommendation, Position } from "../poker/types";
 import { getPreFlopRecommendation } from "./preFlop";
 import {
   analyzeBoardTexture,
@@ -21,6 +21,7 @@ interface AnalysisInput {
   communityCards: Card[];
   stage: GameStage;
   handEvaluation: HandEvaluation;
+  position?: Position;
 }
 
 export interface EnhancedRecommendation extends Recommendation {
@@ -34,16 +35,16 @@ export interface EnhancedRecommendation extends Recommendation {
  * Get rules-based recommendation with enhanced analysis
  */
 export function getRulesBasedRecommendation(input: AnalysisInput): EnhancedRecommendation {
-  const { holeCards, communityCards, stage, handEvaluation } = input;
+  const { holeCards, communityCards, stage, handEvaluation, position } = input;
 
-  // Pre-flop: use Sklansky tiers
+  // Pre-flop: use Sklansky tiers with position
   if (stage === "preflop" || communityCards.length === 0) {
-    const preFlopRec = getPreFlopRecommendation(holeCards);
+    const preFlopRec = getPreFlopRecommendation(holeCards, position);
     return {
       action: preFlopRec.action,
       confidence: preFlopRec.tier <= 3 ? "HIGH" : preFlopRec.tier <= 6 ? "MEDIUM" : "LOW",
       reasoning: preFlopRec.reasoning,
-      handDescription: `Starting hand: ${formatHoleCards(holeCards)}`,
+      handDescription: preFlopRec.handDescription,
     };
   }
 

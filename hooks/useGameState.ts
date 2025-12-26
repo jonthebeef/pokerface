@@ -7,17 +7,20 @@ import {
   GameState,
   HandEvaluation,
   Recommendation,
+  Position,
   cardsEqual,
 } from "@/lib/poker/types";
 import { evaluateHand } from "@/lib/poker/handEvaluator";
 
 interface UseGameStateResult {
   gameState: GameState;
+  position: Position | null;
   handEvaluation: HandEvaluation | null;
   recommendation: Recommendation | null;
   isAnalyzing: boolean;
 
   // Actions
+  setPosition: (position: Position) => void;
   setHoleCards: (cards: [Card, Card]) => void;
   addCommunityCards: (cards: Card[]) => void;
   setStage: (stage: GameStage) => void;
@@ -34,6 +37,7 @@ const initialState: GameState = {
 
 export function useGameState(): UseGameStateResult {
   const [gameState, setGameState] = useState<GameState>(initialState);
+  const [position, setPositionState] = useState<Position | null>(null);
   const [handEvaluation, setHandEvaluation] = useState<HandEvaluation | null>(
     null
   );
@@ -41,6 +45,10 @@ export function useGameState(): UseGameStateResult {
     null
   );
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  const setPosition = useCallback((pos: Position) => {
+    setPositionState(pos);
+  }, []);
 
   const setHoleCards = useCallback((cards: [Card, Card]) => {
     setGameState((prev) => ({ ...prev, holeCards: cards }));
@@ -99,6 +107,7 @@ export function useGameState(): UseGameStateResult {
 
   const reset = useCallback(() => {
     setGameState(initialState);
+    setPositionState(null);
     setHandEvaluation(null);
     setRecommendation(null);
   }, []);
@@ -127,6 +136,7 @@ export function useGameState(): UseGameStateResult {
           communityCards: gameState.communityCards,
           stage: gameState.stage,
           handEvaluation: evaluation,
+          position: position,
         }),
       });
 
@@ -139,13 +149,15 @@ export function useGameState(): UseGameStateResult {
     } finally {
       setIsAnalyzing(false);
     }
-  }, [gameState]);
+  }, [gameState, position]);
 
   return {
     gameState,
+    position,
     handEvaluation,
     recommendation,
     isAnalyzing,
+    setPosition,
     setHoleCards,
     addCommunityCards,
     setStage,

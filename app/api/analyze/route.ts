@@ -4,19 +4,20 @@ import {
   getRulesBasedRecommendation,
   buildClaudePrompt,
 } from "@/lib/strategy/recommendationEngine";
-import { Card, GameStage, HandEvaluation, Recommendation } from "@/lib/poker/types";
+import { Card, GameStage, HandEvaluation, Recommendation, Position } from "@/lib/poker/types";
 
 interface AnalyzeRequest {
   holeCards: [Card, Card];
   communityCards: Card[];
   stage: GameStage;
   handEvaluation: HandEvaluation;
+  position?: Position;
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body: AnalyzeRequest = await request.json();
-    const { holeCards, communityCards, stage, handEvaluation } = body;
+    const { holeCards, communityCards, stage, handEvaluation, position } = body;
 
     // Get rules-based recommendation (always works)
     const rulesRec = getRulesBasedRecommendation({
@@ -24,6 +25,7 @@ export async function POST(request: NextRequest) {
       communityCards,
       stage,
       handEvaluation,
+      position,
     });
 
     let recommendation: Recommendation = rulesRec;
