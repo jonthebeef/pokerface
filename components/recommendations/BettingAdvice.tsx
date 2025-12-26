@@ -61,6 +61,38 @@ export function BettingAdvice({ recommendation, isLoading }: BettingAdviceProps)
         </div>
       </div>
 
+      {/* Hand description */}
+      {recommendation.handDescription && (
+        <div className="bg-gray-800 rounded-lg p-3">
+          <div className="text-base font-semibold text-white">
+            {recommendation.handDescription}
+          </div>
+        </div>
+      )}
+
+      {/* Board warning (danger indicator) */}
+      {recommendation.boardWarning && (
+        <div className="bg-red-900/40 border border-red-700 rounded-lg p-3">
+          <div className="text-sm text-red-300 font-medium">
+            ⚠️ {recommendation.boardWarning}
+          </div>
+        </div>
+      )}
+
+      {/* Draw info with odds */}
+      {recommendation.drawInfo && (
+        <div className="bg-blue-900/30 border border-blue-600 rounded-lg p-3 flex justify-between items-center">
+          <div className="text-sm text-blue-200">
+            🎯 {recommendation.drawInfo}
+          </div>
+          {recommendation.outsOdds && (
+            <div className="text-sm text-blue-400 font-medium">
+              {recommendation.outsOdds}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Reasoning */}
       <div className="bg-gray-800 rounded-lg p-3">
         <div className="text-sm text-gray-300">{recommendation.reasoning}</div>
@@ -68,9 +100,9 @@ export function BettingAdvice({ recommendation, isLoading }: BettingAdviceProps)
 
       {/* Claude's advice (if available) */}
       {recommendation.claudeAdvice && (
-        <div className="bg-blue-900/30 border border-blue-700 rounded-lg p-3">
-          <div className="text-xs text-blue-400 font-medium mb-1">Coach Says:</div>
-          <div className="text-sm text-blue-200">{recommendation.claudeAdvice}</div>
+        <div className="bg-purple-900/30 border border-purple-700 rounded-lg p-3">
+          <div className="text-xs text-purple-400 font-medium mb-1">Coach Says:</div>
+          <div className="text-sm text-purple-200">{recommendation.claudeAdvice}</div>
         </div>
       )}
     </div>

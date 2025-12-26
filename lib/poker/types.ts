@@ -46,6 +46,11 @@ export interface Recommendation {
   confidence: "HIGH" | "MEDIUM" | "LOW";
   reasoning: string;
   claudeAdvice?: string;
+  // Enhanced fields
+  handDescription?: string;
+  boardWarning?: string;
+  drawInfo?: string;
+  outsOdds?: string;
 }
 
 // Odds types
