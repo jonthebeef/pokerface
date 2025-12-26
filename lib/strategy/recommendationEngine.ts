@@ -24,11 +24,12 @@ export function getRulesBasedRecommendation(input: AnalysisInput): Recommendatio
     };
   }
 
-  // Post-flop: use hand rank as primary factor
+  // Post-flop: check if hole cards actually contribute to the hand
   const handRank = handEvaluation.handRank;
+  const holeCardsContribute = doHoleCardsContribute(holeCards, communityCards, handRank);
 
-  // Strong hands: Two Pair or better (rank >= 3) → RAISE
-  if (handRank >= 3) {
+  // Strong hands: Two Pair or better (rank >= 3) AND hole cards contribute → RAISE
+  if (handRank >= 3 && holeCardsContribute) {
     return {
       action: "RAISE",
       confidence: "HIGH",
@@ -36,12 +37,38 @@ export function getRulesBasedRecommendation(input: AnalysisInput): Recommendatio
     };
   }
 
-  // Made hand: Pair (rank == 2) → CALL
-  if (handRank === 2) {
+  // Board has a strong hand but you don't contribute → be cautious
+  if (handRank >= 3 && !holeCardsContribute) {
+    return {
+      action: "CHECK",
+      confidence: "LOW",
+      reasoning: `The board shows ${handEvaluation.description}, but your cards don't improve it. Everyone has this hand - check or fold to bets.`,
+    };
+  }
+
+  // Made hand: Pair using YOUR cards → CALL
+  if (handRank === 2 && holeCardsContribute) {
     return {
       action: "CALL",
       confidence: "MEDIUM",
       reasoning: `You have ${handEvaluation.description}. A decent hand - call to see more cards, but be cautious of heavy betting.`,
+    };
+  }
+
+  // Board pair only (your cards don't help) → basically high card, likely FOLD
+  if (handRank === 2 && !holeCardsContribute) {
+    const possibleDraw = hasFlushDraw(holeCards, communityCards) || hasStraightDraw(holeCards, communityCards);
+    if (possibleDraw) {
+      return {
+        action: "CHECK",
+        confidence: "LOW",
+        reasoning: `The pair is on the board (everyone has it). You have a draw though - check to see free cards.`,
+      };
+    }
+    return {
+      action: "FOLD",
+      confidence: "HIGH",
+      reasoning: `The pair is on the board - everyone has it. Your ${formatHighCards(holeCards)} don't help. Fold.`,
     };
   }
 
@@ -62,6 +89,44 @@ export function getRulesBasedRecommendation(input: AnalysisInput): Recommendatio
     confidence: "HIGH",
     reasoning: `You have ${handEvaluation.description}. With no pair and no draw, fold and wait for a better hand.`,
   };
+}
+
+/**
+ * Check if hole cards actually contribute to making the hand
+ * e.g., if board has a pair, do YOUR cards make it two pair or trips?
+ */
+function doHoleCardsContribute(
+  holeCards: [Card, Card],
+  communityCards: Card[],
+  handRank: number
+): boolean {
+  const holeRanks = holeCards.map((c) => c.rank);
+  const communityRanks = communityCards.map((c) => c.rank);
+
+  // Check if either hole card rank appears in community cards (pair/trips contribution)
+  const holeCardMatchesCommunity = holeRanks.some((r) => communityRanks.includes(r));
+
+  // Check if hole cards form a pair with each other
+  const holeCardsArePair = holeRanks[0] === holeRanks[1];
+
+  // For pairs and better, check if hole cards are involved
+  if (handRank >= 2) {
+    return holeCardMatchesCommunity || holeCardsArePair;
+  }
+
+  // High card - hole cards always "contribute" (they are the high cards)
+  return true;
+}
+
+/**
+ * Format hole cards for display in reasoning
+ */
+function formatHighCards(holeCards: [Card, Card]): string {
+  const rankNames: Record<string, string> = {
+    A: "Ace", K: "King", Q: "Queen", J: "Jack", T: "Ten",
+    "9": "9", "8": "8", "7": "7", "6": "6", "5": "5", "4": "4", "3": "3", "2": "2",
+  };
+  return `${rankNames[holeCards[0].rank]}-${rankNames[holeCards[1].rank]}`;
 }
 
 /**

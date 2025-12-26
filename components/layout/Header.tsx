@@ -6,7 +6,7 @@ interface HeaderProps {
 
 export function Header({ onReset }: HeaderProps) {
   return (
-    <header className="bg-gray-900 border-b border-gray-800 px-4 py-3">
+    <header className="bg-gray-900 border-b border-gray-800 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-xl font-bold text-white">Poker Coach</h1>
